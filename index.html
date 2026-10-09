@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#dcd7ff">
+<title>云上大富翁 · 3D 原型</title>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <script type="module" crossorigin src="./assets/index-DGDKtHtw.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-C7FngoQZ.css">
+</head>
+<body class="titling">
+<canvas id="stage" aria-label="3D 棋盘。拖动可以看四周，点格子看详情"></canvas>
+<div id="floaters" aria-hidden="true"></div>
+
+<div class="hud" id="tl">
+  <div class="tlrow">
+  <button id="bBack" aria-label="返回开始页面"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 8 12l6.5 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tx">返回</span></button>
+  <div id="date" class="panel">
+    <div><div class="wk" id="wk">星期一</div><div class="of" id="of">共 20 天</div></div>
+    <div class="digits" id="digits"><span>0</span><span>0</span><span>1</span></div>
+    <div class="unit">天</div>
+  </div>
+  </div>
+  <div id="rank" class="panel"><div class="ttl">资产排名</div><div id="bars"></div></div>
+</div>
+
+<div class="hud" id="tools">
+  <button class="tbtn" id="bMap" aria-pressed="false" aria-label="看全景"><span class="ico">🗺️</span><span class="tx">看全景</span></button>
+  <button class="tbtn" id="bSpeed" aria-pressed="false" aria-label="加速"><span class="ico">⏩</span><span class="tx">加速</span></button>
+  <button class="tbtn" id="bSound" aria-pressed="true" aria-label="声音"><span class="ico">🔊</span><span class="tx">声音</span></button>
+  <button class="tbtn" id="bFx" aria-pressed="true" aria-label="画面特效"><span class="ico">🎆</span><span class="tx">特效</span></button>
+  <button class="tbtn" id="bLog" aria-label="动态"><span class="ico">🗒️</span><span class="tx">动态</span></button>
+  <button class="tbtn" id="bHelp" aria-label="规则和图鉴"><span class="ico">📖</span><span class="tx">图鉴</span></button>
+</div>
+
+<div class="hud" id="players"></div>
+<div class="hud" id="toasts" aria-live="polite"></div>
+
+<div class="hud" id="bottom">
+  <div id="leftCol">
+    <div id="teamBar" hidden></div>
+    <div class="turnrow"><div id="turn"><img id="turnAva" alt=""><span id="turnText">准备开始</span></div><div id="chips"></div></div>
+    <div id="hand"></div>
+  </div>
+  <div class="right">
+  <button id="skill" aria-label="技能"><span class="sic">🍀</span><span class="sn">技能</span><span class="pips"><i></i><i></i><i></i></span></button>
+  <button id="dice" disabled aria-label="掷骰子">
+    <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="3" width="34" height="34" rx="9" fill="#fff" stroke="#2a2b5e" stroke-width="3"/><circle cx="12.5" cy="12.5" r="3.4" fill="#2a2b5e"/><circle cx="20" cy="20" r="3.8" fill="#ff4f6d"/><circle cx="27.5" cy="27.5" r="3.4" fill="#2a2b5e"/></svg>
+    <span id="diceLabel">等一等</span>
+  </button>
+  </div>
+</div>
+
+<div id="modal" role="dialog" aria-modal="true"></div>
+
+<!-- 事件特写：买地、升级、拿卡、破产时弹出（blender/events.py），点一下跳过 -->
+<div id="cutin" hidden>
+  <div class="cutcard">
+    <video id="cutinVideo" muted playsinline preload="auto"></video>
+    <div id="cutinCap"></div>
+  </div>
+</div>
+<!-- 开场动画：Blender 渲染的视频（blender/intro.py），播完或点“跳过”后淡出 -->
+<div id="intro" hidden>
+  <video id="introVideo" muted playsinline preload="auto" aria-label="开场动画"></video>
+  <button id="introSkip" type="button">跳过 ›</button>
+</div>
+<div id="title">
+  <div class="tcard">
+    <h1 class="logo" aria-label="云上大富翁">
+      <span style="--c:#a593ff;--r:-6deg;--d:.05s">云</span><span style="--c:#3d8bff;--r:4deg;--d:.13s">上</span><span style="--c:#ff4f6d;--r:-3deg;--d:.21s">大</span><span style="--c:#ffbe2e;--r:5deg;--d:.29s">富</span><span style="--c:#25c178;--r:-4deg;--d:.37s">翁</span>
+    </h1>
+    <!-- 宽屏上左右两栏：左边选角色，右边选地图和玩法；窄屏上就是一列 -->
+    <div class="tcols">
+    <div class="tcol">
+    <div class="psec">选角色</div>
+    <div class="chars" id="charPick" role="radiogroup" aria-label="选一个角色"></div>
+    <div class="chdesc" id="chDesc">角色加载中…</div>
+    </div>
+    <div class="tcol">
+    <div class="psec">选地图</div>
+    <div class="maps" id="mapPick" role="radiogroup" aria-label="地图场景"></div>
+    <div class="sizes" id="sizePick" role="radiogroup" aria-label="地图大小"></div>
+    <div class="sizes" id="timePick" role="radiogroup" aria-label="时间"></div>
+    <p class="mapdesc" id="mapDesc"></p>
+    <div class="psec">玩法<button type="button" class="reroll" id="teamToggle" aria-pressed="false" aria-label="2 对 2 团队模式">🤝 2对2 组队</button></div>
+    <div class="sizes" id="winPick" role="radiogroup" aria-label="胜利条件"></div>
+    <p class="mapdesc" id="winDesc"></p>
+    </div>
+    </div>
+    <button id="startBtn" class="btn primary big" disabled>正在搭建小岛…</button>
+    <div class="morebtns">
+      <button id="campBtn" class="btn netbtn" type="button">🏆 闯关模式</button>
+      <button id="netBtn" class="btn netbtn" type="button">👥 和朋友联机</button>
+    </div>
+    <p class="hint">拖动画面看四周，双指或滚轮缩放，点格子看详情</p>
+    <p class="err" id="loadErr" hidden>3D 引擎没加载出来，检查一下网络后刷新页面再试。</p>
+  </div>
+</div>
+
+</body>
+</html>
